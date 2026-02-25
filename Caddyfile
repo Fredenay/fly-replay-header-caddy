@@ -6,11 +6,15 @@
 :8080 {
   respond /health-check "OK" 200
 
-  reverse_proxy http://43.249.194.226:20030 {
-    # 关键：回源 Host 固定成上游 IP:端口，绕开“域名过白”
+  reverse_proxy {$UPSTREAM} {
+    # 过白绕过：回源 Host 固定成上游 host:port
     header_up Host {upstream_hostport}
 
-    # 可选：如果机房还看 X-Forwarded-Host，就一起覆盖
-    header_up X-Forwarded-Host {upstream_hostport}
+    # 让源站生成页面时知道外部域名（可选）
+    header_up X-Forwarded-Host {host}
+    header_up X-Forwarded-Proto {scheme}
+
+    # 把源站重定向里的“上游地址”改回当前域名（可选）
+    header_down Location {$UPSTREAM} https://{host}
   }
 }
