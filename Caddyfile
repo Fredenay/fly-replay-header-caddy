@@ -1,19 +1,16 @@
 {
-    # debug
-    auto_https off
-    http_port 8080
-    log {
-        format console
-    }
+  auto_https off
+  http_port 8080
 }
 
 :8080 {
-    # Parses the path to assign the variable {target_region} based on the second capture group of the regex
-    map     {uri}                                           {target_region} {
-            ~\/gameserver\/(.+)$                            "region=${1}"
-            ~\/live\/websocket\?.*_region=(.+)\&_path.*$    "region=${1}"
-            default                                         ""
-    }
+  respond /health-check "OK" 200
+
+  reverse_proxy http://43.249.194.226:20030 {
+    # 关键：把回源 Host 固定成上游（IP:端口），别带 fly.dev 域名
+    header_up Host {upstream_hostport}
+  }
+}
 
     # Defines a named matcher that checks that the request is for a gameserver and hasn't been already redirected by the proxy
     @tobereplayed {
