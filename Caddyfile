@@ -6,6 +6,10 @@
 :8080 {
   respond /health-check "OK" 200
 
+header {
+  Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+}
+
   reverse_proxy http://103.205.254.57:40702 {
     header_up Host {upstream_hostport}
     header_up X-Forwarded-Host {host}
