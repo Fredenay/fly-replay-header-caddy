@@ -7,31 +7,10 @@
   respond /health-check "OK" 200
 
   reverse_proxy http://43.249.194.226:20030 {
-    # 关键：把回源 Host 固定成上游（IP:端口），别带 fly.dev 域名
+    # 关键：回源 Host 固定成上游 IP:端口，绕开“域名过白”
     header_up Host {upstream_hostport}
+
+    # 可选：如果机房还看 X-Forwarded-Host，就一起覆盖
+    header_up X-Forwarded-Host {upstream_hostport}
   }
-}
-
-    # Defines a named matcher that checks that the request is for a gameserver and hasn't been already redirected by the proxy
-    @tobereplayed {
-        path /gameserver/*
-        header !fly-replay-src
-    }
-
-    # Defines a named matcher that checks that the request is for a liveview's websocket and hasn't been already redirected by the proxy
-    # The regex in the map ensures the region cannot be null
-    @tobereplayedws {
-        path /live/websocket*
-        header !fly-replay-src
-    }
-
-    # Add a response header to all requests that should be replayed with the target region
-    header @tobereplayed    fly-replay {target_region}
-    header @tobereplayedws  fly-replay {target_region}
-
-    # Provide a static 200 response at the /health-check path intended for Fly.io's health checks
-    respond /health-check "OK" 200
-
-    # proxy everything else to the fly-machines-proxy-demo.fly.dev upstream server
-    reverse_proxy http://43.249.194.226:20030
 }
