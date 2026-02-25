@@ -1,12 +1,14 @@
 {
   auto_https off
   http_port 8080
+{
+  http_port 8080
 }
 
 :8080 {
   respond /health-check "OK" 200
 
-  #  以后只改这一行
+  # 以后只改这一行
   reverse_proxy http://103.205.254.57:40702 {
     # 过白绕过：回源 Host 固定成上游 host:port
     header_up Host {upstream_hostport}
@@ -14,6 +16,9 @@
     # 让源站生成页面时知道外部域名（给你修复 baseUrl 用）
     header_up X-Forwarded-Host {host}
     header_up X-Forwarded-Proto {scheme}
+
+    # 关键：减少 CF 代理下的异常/520（避免奇怪的 flush 行为）
+    flush_interval -1
 
     # 抗抖动（降低偶发 52x）
     lb_try_duration 5s
