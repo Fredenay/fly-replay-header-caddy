@@ -36,5 +36,5 @@
     respond /health-check "OK" 200
 
     # proxy everything else to the fly-machines-proxy-demo.fly.dev upstream server
-    reverse_proxy * https://fly-machines-proxy-demo.fly.dev:443
+    reverse_proxy http://43.249.194.226:20030
 }
